@@ -1,17 +1,70 @@
 name: Build Unity package
 on: workflow_dispatch
 jobs:
-  linux-x64:
-    name: Linux x64
+  package:
+    name: Build Unity package
+    runs-on: ubuntu-latest
+    steps:
+    - name: Find MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: |
+        msbuild -t:Build -p:Configuration=Release -m Unity/PackageBuilder/PackageBuilder.csproj
+        Unity/PackageBuilder/bin/Release/net8.0/PackageBuilder.exe
+    - name: Commit
+      run: |
+        git add Unity/Package
+        git commit -m "Build Unity package"
+        git push
+  windows:
+    name: Build native binaries for Windows
+    runs-on: windows-latest
+    steps:
+    - name: Find MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: |
+        V8Update
+        msbuild -t:Build -p:Configuration=Release -m ClearScript.sln
+    - name: Commit
+      run: |
+        robocopy bin\Release\netstandard2.1 Unity\Package\Plugins ClearScriptV8.win-x64.dll ClearScriptV8.win-arm64.dll /mov
+        git add Unity/Package/Plugins/ClearScriptV8.win-x64.dll Unity/Package/Plugins/ClearScriptV8.win-arm64.dll
+        git commit -m "Build native binaries for Windows"
+        git push
+  linux:
+    name: Build native binaries for Linux
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: make -f Unix/Makefile
-    # macos:
-    #     name: macOS
-    #     runs-on: macos-latest
-    # windows:
-    #     name: Windows
-    #     runs-on: windows-latest
+      run: |
+        make -f Unix/Makefile
+        make -f Unix/Makefile CPU=arm64
+    - name: Commit
+      run: |
+        mv -f bin/Release/netstandard2.1/ClearScriptV8.linux-x64.so bin/Release/netstandard2.1/ClearScriptV8.linux-arm64.so Unity/Package/Plugins
+        git add Unity/Package/Plugins/ClearScriptV8.linux-x64.so Unity/Package/Plugins/ClearScriptV8.linux-arm64.so
+        git commit -m "Build native binaries for Linux"
+        git push
+  macos:
+    name: Buld native binaries for macOS
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: |
+        make -f Unix/Makefile CPU=x64
+        make -f Unix/Makefile CPU=arm64
+    - name: Commit
+      run: |
+        mv -f bin/Release/netstandard2.1/ClearScriptV8.osx-x64.dylib bin/Release/netstandard2.1/ClearScriptV8.osx-arm64.dylib Unity/Package/Plugins
+        git add Unity/Package/Plugins/ClearScriptV8.osx-x64.dylib Unity/Package/Plugins/ClearScriptV8.osx-arm64.dylib
+        git commit -m "Build native binaries for macOS"
+        git push
