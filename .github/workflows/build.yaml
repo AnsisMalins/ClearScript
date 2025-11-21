@@ -1,18 +1,16 @@
 name: Build Unity package
 on: workflow_dispatch
 jobs:
-  package:
+  unity:
     name: Build Unity package
     runs-on: ubuntu-latest
     steps:
-    - name: Find MSBuild
-      uses: microsoft/setup-msbuild@v2
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
       run: |
-        msbuild -t:Build -p:Configuration=Release -m Unity/PackageBuilder/PackageBuilder.csproj
-        Unity/PackageBuilder/bin/Release/net8.0/PackageBuilder.exe
+        dotnet build -c Release Unity/PackageBuilder/PackageBuilder.csproj
+        dotnet Unity/PackageBuilder/bin/Release/net8.0/PackageBuilder.dll
     - name: Commit
       run: |
         git add Unity/Package
@@ -28,7 +26,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Build
       run: |
-        V8Update
+        ./V8Update.cmd
         msbuild -t:Build -p:Configuration=Release -m ClearScript.sln
     - name: Commit
       run: |
