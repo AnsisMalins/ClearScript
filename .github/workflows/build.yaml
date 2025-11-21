@@ -1,0 +1,14 @@
+name: Build Unity package and native libraries
+on: workflow_dispatch
+jobs:
+    linux:
+        name: Linux
+        runs-on: ubuntu-24.04
+        steps:
+            - uses: mxschmitt/action-tmate@v3
+    # macos:
+    #     name: macOS
+    #     runs-on: macos-latest
+    # windows:
+    #     name: Windows
+    #     runs-on: windows-latest
