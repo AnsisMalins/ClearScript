@@ -1,11 +1,14 @@
-name: Build Unity package and native libraries
+name: Build Unity package
 on: workflow_dispatch
 jobs:
-    linux:
-        name: Linux
-        runs-on: ubuntu-24.04
-        steps:
-            - uses: mxschmitt/action-tmate@v3
+  linux-x64:
+    name: Linux x64
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: make -f Unix/Makefile
     # macos:
     #     name: macOS
     #     runs-on: macos-latest
